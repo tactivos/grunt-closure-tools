@@ -46,7 +46,8 @@ var gruntConfig = {
 };
 
 
-var fs = require('fs');
+var fs = require('fs'),
+    path = require('path');
 
 // path to depswriter from closure lib path
 var DEPSWRITER = '/closure/bin/build/depswriter.py';
@@ -100,7 +101,7 @@ function validate(grunt, data)
       return false;
     }
   } else {
-    depswriter = lib + DEPSWRITER;
+    depswriter = path.join(lib, DEPSWRITER);
   }
 
   depswriter = grunt.file.expandFiles(depswriter).shift();
@@ -129,23 +130,30 @@ function validate(grunt, data)
  * @param {Object} data
  * @return {string|boolean} boolean false if we failed, command string if all ok
  */
-function compileCommand(grunt, params, data)
-{
-  var cmd = params.depswriter + ' ';
+function compileCommand(grunt, params, data) {
+  var cmd = []
+
+  // Add Python as the first part of the path (to ensure that it works)
+  // on multiplatform environments (basically shebangs not work on windows).
+  cmd.push('python');
+
+  // Add the depswriter script generated above 
+  cmd.push(params.depswriter);
 
   // ---
   // Check for file targets...
   // ---
   var files = grunt.file.expandFiles(data.files || '');
   for (var i = 0, l = files.length; i < l; i++) {
-    cmd += files[i] + ' ';
+    cmd.push(files[i]);
   }
 
   // ---
   // loop through any options and add then up...
   // ---
   for(var directive in data.options) {
-    cmd += grunt.helper('makeParam', data.options[directive], '--' + directive + '=', true);
+    var param = grunt.helper('makeParam', data.options[directive], '--' + directive + '=', true);
+    cmd.push(param);
   }
 
   // ---
@@ -153,9 +161,9 @@ function compileCommand(grunt, params, data)
   // ---
   if (data.output_file && data.output_file.length) {
     grunt.file.write(data.output_file, ''); // Write to the file first in case it doesn't exist
-    cmd += ' --output_file=' + grunt.file.expandFiles(data.output_file).shift();
+    output = ' --output_file=' + grunt.file.expandFiles(data.output_file).shift();
+    cmd.push(output);
   }
 
-  return cmd;
+  return cmd.join(' ');
 }
-
