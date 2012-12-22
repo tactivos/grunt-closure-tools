@@ -53,7 +53,8 @@
 
 
 
-var fs = require('fs');
+var fs = require('fs'),
+    path = require('path');
 
 // path to builder from closure lib path
 var BUILDER = '/closure/bin/build/closurebuilder.py';
@@ -120,7 +121,7 @@ function validate(grunt, data)
       return false;
     }
   } else {
-    builder = lib + BUILDER;
+    builder = path.join(lib, BUILDER);
   }
 
   builder = grunt.file.expandFiles(builder).shift();
@@ -149,6 +150,10 @@ function validate(grunt, data)
     grunt.log.error('ERROR'.red + ' :: ' + 'root'.red + ' property is required');
     return false;
   }
+
+  // let's add python to the builder since Windows doesn't
+  // support shebangs
+  builder = grunt.template.process('python <%= builder %>', {builder: builder}); 
 
   // prep and return params object
   return {
@@ -183,7 +188,8 @@ function compileCommand(grunt, params, data)
   }
 
   // append root
-  cmd += grunt.helper('makeParam', params.root, '--root=', true, true);
+  cmd += grunt.helper('makeParam', params.root, '--root=', true, false);
+
   // check type of operation
   var op = data.output_mode || 'list';
 

@@ -2,6 +2,7 @@
 
 - **v0.6.13**, *21 December 2012*
   - Prepended python to closureDepsWriter to make it work on Windows [johnnyhalife](https://twitter.com/johnnyhalife)
+  - Prepended python to closureBuilder to make it work on Windows [johnnyhalife](https://twitter.com/johnnyhalife)
 
 - **v0.6.12**, *12 December 2012*
   - fixed issue [#14](https://github.com/thanpolas/grunt-closure-tools/issues/14), when closureBuilder run from a grunt watch task, the root param got lost.
